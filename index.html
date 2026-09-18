@@ -1,0 +1,1699 @@
+<meta charset="UTF-8">
+<title>Rivalo: Vegas Getaway</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<style>
+  :root{
+    --bg-deep:#050b16;
+    --bg-deep-2:#0a1730;
+    --cabinet:#102240;
+    --cabinet-edge:#1a3660;
+    --neon-pink:#ff2f76;
+    --neon-teal:#1fe8c9;
+    --gold:#ffcb4d;
+    --violet:#2e8dff;
+    --cream:#f3ead9;
+    --ink:#050308;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{
+    height:100%;margin:0;
+    background:
+      radial-gradient(ellipse at 50% -10%, #132a4e 0%, var(--bg-deep) 55%, var(--ink) 100%);
+    color:var(--cream);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;
+    -webkit-user-select:none;user-select:none;
+  }
+  .display{
+    font-family:"Arial Black","Arial Narrow Bold","Helvetica Neue",sans-serif;
+    letter-spacing:.06em;
+    font-weight:900;
+    text-transform:uppercase;
+  }
+  .mono{
+    font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace;
+    font-variant-numeric:tabular-nums;
+  }
+
+  #cabinet{
+    position:relative;
+    width:min(97vw,980px);
+    display:flex;flex-direction:column;
+    gap:10px;
+    padding:12px 12px 16px;
+    background:linear-gradient(180deg,var(--cabinet-edge),var(--cabinet) 12%,var(--cabinet) 88%,var(--cabinet-edge));
+    border-radius:22px;
+    box-shadow:0 0 0 1px rgba(46,141,255,.25), 0 30px 60px -20px rgba(0,0,0,.8), inset 0 0 40px rgba(0,0,0,.5);
+  }
+
+  #btnMute{
+    position:absolute; top:10px; right:12px; z-index:5;
+    width:38px;height:38px;border-radius:10px;
+    border:2px solid rgba(46,141,255,.5);
+    background:rgba(15,35,64,.85);
+    color:#9dc6f5; font-size:17px; line-height:1;
+    cursor:pointer; padding:0;
+  }
+  #btnMute:hover{border-color:var(--neon-teal);color:#fff;}
+  #btnMute.off{color:#5a6c86;border-color:rgba(90,108,134,.5);}
+
+  .marquee{
+    position:relative;
+    text-align:center;
+    padding:8px 6px 2px;
+    overflow:hidden;
+  }
+  .marquee .title{
+    font-size:clamp(26px,6.4vw,46px);
+    color:var(--cream);
+    text-shadow:
+      0 0 6px var(--neon-pink),
+      0 0 18px var(--neon-pink),
+      0 0 2px #fff;
+    line-height:1;
+  }
+  .marquee .subtitle{
+    margin-top:4px;
+    font-size:clamp(11px,2.6vw,15px);
+    letter-spacing:.35em;
+    color:var(--neon-teal);
+    text-shadow:0 0 8px var(--neon-teal);
+    font-weight:700;
+  }
+  .bulbs{
+    position:absolute;inset:0;
+    pointer-events:none;
+  }
+  .bulbs span{
+    position:absolute;width:5px;height:5px;border-radius:50%;
+    background:var(--gold);
+    box-shadow:0 0 6px 2px var(--gold);
+    animation:chase 1.2s infinite steps(2);
+  }
+  @keyframes chase{ 50%{opacity:.15;box-shadow:0 0 2px 0 var(--gold);} }
+
+  #screenWrap{
+    position:relative;
+    border-radius:10px;
+    background:#000;
+    box-shadow:inset 0 0 0 3px #000, inset 0 0 0 5px rgba(46,141,255,.4), 0 0 30px rgba(31,232,201,.15);
+    overflow:hidden;
+  }
+  #screenWrap.ui-mode{overflow:visible;}
+  #screenWrap.ui-mode > canvas#game{display:none;}
+  #screenWrap.ui-mode .overlay:not(.hidden){position:relative;inset:auto;border-radius:10px;}
+  canvas{
+    display:block;
+    width:100%;
+    height:auto;
+    aspect-ratio:16/9;
+    image-rendering:pixelated;
+    image-rendering:-moz-crisp-edges;
+  }
+  .scanlines{
+    position:absolute;inset:0;pointer-events:none;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0px,rgba(0,0,0,.16) 1px,transparent 2px,transparent 3px);
+    mix-blend-mode:multiply;
+    opacity:.5;
+  }
+  .vignette{
+    position:absolute;inset:0;pointer-events:none;
+    box-shadow:inset 0 0 60px 18px rgba(0,0,0,.65);
+  }
+
+  .overlay{
+    position:absolute;inset:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:14px;
+    background:rgba(5,3,10,.86);
+    text-align:center;
+    padding:16px;
+    transition:opacity .2s ease;
+  }
+  #screenWrap.ui-mode .overlay{
+    justify-content:flex-start;
+    padding-top:22px;
+    border-radius:10px;
+  }
+  /* Titulo: HUD flutuando sobre a cena animada, sem cobri-la. */
+  #ov-title{
+    padding-bottom:64px;
+    background:linear-gradient(180deg,
+      rgba(5,11,22,0) 0%, rgba(5,11,22,0) 70%,
+      rgba(5,11,22,.55) 84%, rgba(5,11,22,.88) 100%);
+    justify-content:flex-end;
+    gap:10px;
+    padding-bottom:18px;
+  }
+  #ov-title h2{
+    font-size:clamp(15px,3.4vw,22px);
+    margin-bottom:2px;
+  }
+  #ov-title p{max-width:44ch;font-size:12px;}
+  .pickrow{display:flex;gap:10px;margin-top:2px;}
+  .namechip{
+    font-family:"Arial Black",sans-serif;
+    font-size:13px;letter-spacing:.1em;text-transform:uppercase;
+    padding:7px 18px;border-radius:999px;
+    border:2px solid rgba(46,141,255,.55);
+    background:rgba(15,35,64,.75);
+    color:#9dc6f5;cursor:pointer;
+    transition:all .12s ease;
+  }
+  .namechip:hover{border-color:var(--neon-teal);color:#fff;}
+  .namechip.selected{
+    border-color:var(--gold);color:var(--ink);
+    background:linear-gradient(180deg,var(--gold),#e0a423);
+    box-shadow:0 0 14px rgba(255,203,77,.45);
+  }
+  .overlay.hidden{display:none;}
+  .overlay h2{
+    margin:0;
+    font-size:clamp(18px,4.6vw,28px);
+    color:var(--gold);
+    text-shadow:0 0 10px rgba(255,203,77,.6);
+  }
+  .overlay p{margin:0;font-size:13px;color:#cfc6e6;max-width:38ch;line-height:1.5;}
+  .overlay .stat{font-size:13px;color:var(--neon-teal);}
+
+  .pickrow{display:flex;gap:14px;margin-top:2px;}
+  .pickcard{
+    width:132px;
+    border:2px solid rgba(46,141,255,.5);
+    border-radius:12px;
+    padding:10px 8px 8px;
+    background:linear-gradient(180deg,#0f2340,#150e2c);
+    cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+    transition:transform .12s ease, border-color .12s ease;
+  }
+  .pickcard:hover,.pickcard:focus-visible{transform:translateY(-3px);border-color:var(--neon-teal);outline:none;}
+  .pickcard.selected{border-color:var(--gold);box-shadow:0 0 16px rgba(255,203,77,.35);}
+  .pickcard canvas{width:72px;height:72px;image-rendering:pixelated;}
+  .pickcard span{font-size:14px;font-weight:700;letter-spacing:.08em;}
+  .pickcard small{font-size:11px;color:#a99bd1;line-height:1.3;}
+
+  .btn{
+    font-family:inherit;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+    font-size:16px;
+    color:var(--ink);
+    background:linear-gradient(180deg,var(--gold),#e0a423);
+    border:none;border-radius:10px;
+    padding:13px 28px;
+    cursor:pointer;
+    box-shadow:0 4px 0 #8a651a, 0 8px 18px rgba(0,0,0,.4);
+  }
+  .btn:active{transform:translateY(2px);box-shadow:0 1px 0 #8a651a;}
+  .btn.secondary{
+    background:linear-gradient(180deg,#1d4174,#122748);
+    color:var(--cream);
+    box-shadow:0 3px 0 #0a1c33, 0 6px 14px rgba(0,0,0,.4);
+  }
+
+  #hint{
+    font-size:10.5px;color:#8a7ebd;letter-spacing:.02em;
+  }
+
+  #deck{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:4px 6px 0;
+    gap:10px;
+  }
+  .pad{display:grid;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(3,48px);gap:3px;}
+  .pad button{
+    grid-column:2;font-size:0;
+    border:none;border-radius:8px;
+    background:linear-gradient(180deg,#1d4174,#0f2340);
+    box-shadow:0 3px 0 #08182c, inset 0 0 0 1px rgba(255,255,255,.06);
+    color:var(--cream);
+    touch-action:none;
+  }
+  .pad button:active{transform:translateY(2px);box-shadow:0 1px 0 #08182c;}
+  .pad button.left{grid-column:1;grid-row:2;}
+  .pad button.right{grid-column:3;grid-row:2;}
+  .pad button.up{grid-column:2;grid-row:1;}
+  .pad button.left::after{content:"◀";font-size:14px;}
+  .pad button.right::after{content:"▶";font-size:14px;}
+  .pad button.up::after{content:"▲";font-size:14px;}
+
+  .actions{display:flex;gap:10px;align-items:flex-end;}
+  .actions button{
+    width:60px;height:60px;border-radius:50%;
+    border:none;
+    font-weight:800;font-size:11px;letter-spacing:.04em;text-transform:uppercase;
+    box-shadow:0 4px 0 rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.15);
+    touch-action:none;
+  }
+  .actions button:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.35);}
+  #btnThrow{background:radial-gradient(circle at 35% 30%,#2be8cc,#0e9c86);color:#012019;}
+  #btnJump{background:radial-gradient(circle at 35% 30%,#ff5f92,#c81348);color:#2b0010;}
+  #btnSpecial{
+    background:radial-gradient(circle at 35% 30%,#ffd76b,#d99a1c);
+    color:#2b1d00;
+  }
+  #btnSwap{width:40px;height:40px;align-self:center;background:radial-gradient(circle at 35% 30%,#7fc0ff,#1d5fb8);color:#07203f;font-size:9px;}
+
+  footer{
+    text-align:center;font-size:10px;color:#5f5487;letter-spacing:.05em;padding-top:2px;
+  }
+
+
+  /* ---- Telas estreitas: o deck precisa caber em 375px ------------------- */
+  @media (max-width:560px){
+    #cabinet{ padding:8px 8px 12px; gap:6px; border-radius:16px; }
+    .marquee{ padding:4px 4px 0; }
+
+    #deck{ padding:2px 2px 0; gap:6px; }
+    .pad{ grid-template-columns:repeat(3,40px); grid-template-rows:repeat(3,40px); gap:2px; }
+    .actions{ gap:6px; }
+    .actions button{ width:50px; height:50px; font-size:9.5px; }
+    #btnSwap{ width:36px; height:36px; font-size:8px; }
+
+    /* titulo compacto para nao cobrir a cena */
+    #ov-title{ padding-bottom:8px; gap:6px; }
+    .namechip{ font-size:11px; padding:5px 13px; }
+    .btn{ font-size:13px; padding:9px 20px; border-radius:8px; }
+    #hint{ font-size:8.5px; line-height:1.35; }
+    .overlay p{ font-size:11px; }
+    .overlay h2{ font-size:16px; }
+    footer{ font-size:8px; }
+  }
+
+  /* Telas muito estreitas: esconde a dica de teclado, que nem se aplica */
+  @media (max-width:420px){
+    #hint{ display:none; }
+    .actions button{ width:46px; height:46px; }
+    .pad{ grid-template-columns:repeat(3,38px); grid-template-rows:repeat(3,38px); }
+  }
+
+  /* Esconde os controles de toque so em aparelho com mouse. O criterio antigo
+     era largura >= 760px, mas celular em paisagem tem 844px e caia nela,
+     deixando o jogo sem controle algum. */
+
+  /* ---- Paisagem no celular: canvas 16:9 nao pode empurrar o deck pra fora -- */
+  @media (orientation:landscape) and (max-height:600px){
+    #cabinet{ width:min(99vw,1200px); padding:6px 8px 8px; gap:4px; border-radius:12px; }
+    .marquee, footer, #hint{ display:none; }
+    #btnMute{ top:4px; right:6px; width:30px; height:30px; font-size:14px; }
+    #screenWrap{ display:flex; justify-content:center; }
+    canvas{ height:calc(100dvh - 78px); width:auto; max-width:100%; }
+    #deck{ padding:0; gap:8px; align-items:center; }
+    /* direcional vira fileira: a grade 3x3 gastava 136px com 2 linhas vazias */
+    .pad{ display:flex; gap:6px; }
+    .pad button{ width:46px; height:46px; }
+    .pad button.left{ order:1; }
+    .pad button.up{ order:2; }
+    .pad button.right{ order:3; }
+    .actions button{ width:46px; height:46px; font-size:9px; }
+    #btnSwap{ width:34px; height:34px; font-size:7.5px; }
+    #ov-title{ padding-bottom:6px; gap:5px; }
+  }
+
+  @media (hover:hover) and (pointer:fine){
+    .pad,.actions{display:none;}
+  }
+</style>
+
+<div id="cabinet">
+  <button id="btnMute" type="button" aria-label="Som">&#128266;</button>
+  <div class="marquee">
+    <div class="bulbs" id="bulbs"></div>
+    <div class="title display">Vegas Getaway</div>
+    <div class="subtitle display">Rivalo Arcade &middot; Didi &amp; Tami</div>
+  </div>
+
+  <div id="screenWrap">
+    <canvas id="game" width="960" height="540"></canvas>
+    <div class="scanlines"></div>
+    <div class="vignette"></div>
+
+    <div class="overlay" id="ov-title">
+      <div class="pickrow" id="pickrow"></div>
+      <button class="btn" id="btnStart">Press Start</button>
+      <div id="hint">Setas/WASD move &middot; Espa&ccedil;o pula &middot; Z joga ficha &middot; X golpe &middot; C troca</div>
+    </div>
+
+    <div class="overlay hidden" id="ov-pause">
+      <h2 class="display">Pausado</h2>
+      <button class="btn" id="btnResume">Continuar</button>
+    </div>
+
+    <div class="overlay hidden" id="ov-gameover">
+      <h2 class="display" style="color:var(--neon-pink);text-shadow:0 0 10px rgba(255,47,118,.6)">Pego pela seguran&ccedil;a</h2>
+      <p class="stat mono" id="goScore">Pontua&ccedil;&atilde;o: 0</p>
+      <button class="btn" id="btnRetry">Tentar de novo</button>
+    </div>
+
+    <div class="overlay hidden" id="ov-win">
+      <h2 class="display">Fuga Completa!</h2>
+      <p>Didi &amp; Tami escaparam com o jackpot antes que o cofre fechasse.</p>
+      <p class="stat mono" id="winScore">Pontua&ccedil;&atilde;o final: 0</p>
+      <button class="btn" id="btnAgain">Jogar de novo</button>
+    </div>
+  </div>
+
+  <div id="deck">
+    <div class="pad">
+      <button class="up" id="padUp" aria-label="pular"></button>
+      <button class="left" id="padLeft" aria-label="esquerda"></button>
+      <button class="right" id="padRight" aria-label="direita"></button>
+    </div>
+    <div class="actions">
+      <button id="btnSpecial">golpe</button>
+      <button id="btnSwap">troca</button>
+      <button id="btnThrow">ficha</button>
+      <button id="btnJump">pulo</button>
+    </div>
+  </div>
+  <footer>Rivalo &middot; jogo n&atilde;o envolve apostas reais &mdash; jogue com responsabilidade</footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+for(let i=0;i<10;i++){
+  const b=document.createElement('span');
+  b.style.left=(4+i*10.5)+'%';
+  b.style.top= (i%2===0?'4px':'auto');
+  b.style.bottom=(i%2===1?'2px':'auto');
+  b.style.animationDelay=(i*0.11)+'s';
+  document.getElementById('bulbs').appendChild(b);
+}
+
+
+// ---- Audio: chiptune sintetizado, sem arquivos externos --------------------
+// Tudo gerado por osciladores. Evita licenciamento de terceiros e mantem o
+// download leve. O contexto so nasce apos um gesto do usuario (politica do
+// navegador), o que o clique em PRESS START ja resolve.
+const SND=(function(){
+  let ac=null, master=null, musBus=null, sfxBus=null;
+  let muted=false, started=false;
+  let timer=null, step=0, nextT=0, track=null;
+
+  const STEP=0.125;                 // colcheia a 120bpm
+  const f=n=>440*Math.pow(2,(n-69)/12);
+
+  function boot(){
+    if(ac) return;
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC) return;
+    ac=new AC();
+    master=ac.createGain(); master.gain.value=0.55; master.connect(ac.destination);
+    musBus=ac.createGain(); musBus.gain.value=0.34; musBus.connect(master);
+    sfxBus=ac.createGain(); sfxBus.gain.value=0.75; sfxBus.connect(master);
+  }
+
+  // nota simples com envelope
+  function tone(freq,t,dur,type,vol,bus,glideTo){
+    if(!ac) return;
+    const o=ac.createOscillator(), g=ac.createGain();
+    o.type=type||'square';
+    o.frequency.setValueAtTime(freq,t);
+    if(glideTo) o.frequency.exponentialRampToValueAtTime(Math.max(1,glideTo),t+dur);
+    g.gain.setValueAtTime(0,t);
+    g.gain.linearRampToValueAtTime(vol,t+0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g); g.connect(bus||sfxBus);
+    o.start(t); o.stop(t+dur+0.02);
+  }
+
+  // percussao por ruido
+  function noise(t,dur,vol,hp,bus){
+    if(!ac) return;
+    const n=Math.floor(ac.sampleRate*dur);
+    const buf=ac.createBuffer(1,n,ac.sampleRate), d=buf.getChannelData(0);
+    for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*(1-i/n);
+    const s=ac.createBufferSource(); s.buffer=buf;
+    const filt=ac.createBiquadFilter(); filt.type='highpass'; filt.frequency.value=hp||1200;
+    const g=ac.createGain(); g.gain.value=vol;
+    s.connect(filt); filt.connect(g); g.connect(bus||sfxBus);
+    s.start(t);
+  }
+
+  // --- trilhas: Am - F - C - G, 16 passos por acorde -------------------------
+  const PROG={
+    game :[[45,48,52],[41,45,48],[48,52,55],[43,47,50]],
+    title:[[45,48,52],[41,45,48],[48,52,55],[43,47,50]],
+    boss :[[45,48,51],[44,47,50],[43,46,49],[42,45,48]]   // cromatico descendo: tensao
+  };
+  const TEMPO={game:1, title:1.6, boss:0.82};   // multiplicador de duracao do passo
+
+  function schedule(){
+    if(!ac||!track) return;
+    const prog=PROG[track], mul=TEMPO[track];
+    while(nextT < ac.currentTime+0.12){
+      const s=step%64, chord=prog[Math.floor(s/16)], t=nextT;
+      const beat=s%16;
+
+      // baixo: tonica e quinta alternando
+      if(beat%2===0){
+        const bn=(beat%8===0)?chord[0]:(beat%4===0?chord[0]:chord[0]+7);
+        tone(f(bn-12),t,STEP*mul*1.6,'triangle',0.30,musBus);
+      }
+      // arpejo
+      if(track!=='title' || beat%4===0){
+        const an=chord[(Math.floor(beat/2))%3]+12;
+        tone(f(an),t,STEP*mul*0.9,'square',0.10,musBus);
+      }
+      // percussao
+      if(track!=='title'){
+        if(beat%8===0) tone(55,t,0.10,'sine',0.45,musBus,28);        // bumbo
+        if(beat%8===4) noise(t,0.09,0.16,900,musBus);                // caixa
+        if(beat%2===1) noise(t,0.03,0.05,5000,musBus);               // chimbal
+      }
+      // brilho de cassino no fim do ciclo
+      if(s===60) tone(f(chord[2]+24),t,0.3,'square',0.07,musBus);
+
+      nextT+=STEP*mul; step++;
+    }
+  }
+
+  function play(name){
+    boot(); if(!ac) return;
+    if(track===name) return;
+    track=name; step=0; nextT=ac.currentTime+0.05;
+    if(!timer) timer=setInterval(schedule,25);
+  }
+  function stop(){ track=null; }
+
+  const FX={
+    jump   :()=>{ tone(f(64),ac.currentTime,0.16,'square',0.22,sfxBus,f(76)); },
+    throw_ :()=>{ tone(f(72),ac.currentTime,0.09,'square',0.16,sfxBus,f(60)); noise(ac.currentTime,0.05,0.07,3000); },
+    hit    :()=>{ noise(ac.currentTime,0.07,0.20,1800); },
+    kill   :()=>{ const t=ac.currentTime; [72,67,60].forEach((n,i)=>tone(f(n),t+i*0.05,0.12,'square',0.18,sfxBus)); },
+    coin   :()=>{ const t=ac.currentTime; tone(f(84),t,0.07,'square',0.16,sfxBus); tone(f(91),t+0.07,0.14,'square',0.16,sfxBus); },
+    rescue :()=>{ const t=ac.currentTime; [72,76,79,84].forEach((n,i)=>tone(f(n),t+i*0.08,0.20,'square',0.20,sfxBus)); },
+    hurt   :()=>{ tone(f(57),ac.currentTime,0.28,'sawtooth',0.22,sfxBus,f(40)); },
+    bossHit:()=>{ tone(f(45),ac.currentTime,0.14,'square',0.22,sfxBus,f(38)); noise(ac.currentTime,0.08,0.12,600); },
+    win    :()=>{ const t=ac.currentTime; [60,64,67,72,76,79,84].forEach((n,i)=>tone(f(n),t+i*0.10,0.34,'square',0.22,sfxBus)); },
+    special:()=>{ const t=ac.currentTime;
+                  [48,55,60,67,72].forEach((n,i)=>tone(f(n),t+i*0.04,0.42,'square',0.22,sfxBus));
+                  noise(t,0.35,0.22,300); },
+    dash   :()=>{ tone(f(76),ac.currentTime,0.30,'sawtooth',0.20,sfxBus,f(88)); noise(ac.currentTime,0.20,0.12,2400); },
+    charge :()=>{ const t=ac.currentTime; [72,79,84].forEach((n,i)=>tone(f(n),t+i*0.06,0.18,'square',0.14,sfxBus)); },
+    lose   :()=>{ const t=ac.currentTime; [60,57,53,48].forEach((n,i)=>tone(f(n),t+i*0.16,0.42,'sawtooth',0.20,sfxBus)); }
+  };
+
+  function fx(name){
+    boot(); if(!ac||muted) return;
+    if(ac.state==='suspended') ac.resume();
+    (FX[name]||(()=>{}))();
+  }
+
+  function unlock(){
+    boot(); if(!ac) return;
+    if(ac.state==='suspended') ac.resume();
+    started=true;
+  }
+  // moeda de arcade antes de comecar
+  function coin(){
+    boot(); if(!ac||muted) return;
+    const t=ac.currentTime;
+    [84,88,91,96].forEach((n,i)=>tone(f(n),t+i*0.055,0.16,'square',0.20,sfxBus));
+  }
+  function toggleMute(){
+    boot(); if(!ac) return false;
+    muted=!muted;
+    master.gain.setTargetAtTime(muted?0:0.55, ac.currentTime, 0.02);
+    return muted;
+  }
+  return {play,stop,fx,coin,unlock,toggleMute,isMuted:()=>muted,started:()=>started&&!!ac};
+})();
+
+const cv=document.getElementById('game');
+let ctx=cv.getContext('2d');
+ctx.imageSmoothingEnabled=false;
+const W=960,H=540;
+// Camera zoom: integer 2x so pixel art stays crisp. The visible slice of the
+// world is VIEW_W x VIEW_H; CAM_Y parks the floor near the bottom of frame.
+const ZOOM=2, VIEW_W=W/ZOOM, VIEW_H=H/ZOOM, CAM_Y=220;
+let camY=CAM_Y;   // acompanha o jogador na vertical ao subir nas plataformas
+const ENEMY_SCALE=1.15, BOSS_SCALE=0.72;
+
+const TAMI_VARIANT = new URLSearchParams(location.search).get('tami')==='red'
+  ? 'sprites/tami-red.png' : 'sprites/tami.png';
+const HERO_SHEETS={
+  didi:{src:'sprites/didi.png',fw:96,fh:96,ax:48,ay:90},
+  tami:{src:TAMI_VARIANT,fw:96,fh:96,ax:48,ay:90}
+};
+const NPC_SHEETS={
+  'npc-tiger':{src:'sprites/npc-tiger.png'},
+  'npc-dragon':{src:'sprites/npc-dragon.png'},
+  'npc-aviator':{src:'sprites/npc-aviator.png'},
+  'npc-rabbit':{src:'sprites/npc-rabbit.png'},
+  'npc-olympus':{src:'sprites/npc-olympus.png'},
+  'npc-roulette':{src:'sprites/npc-roulette.png'},
+  'npc-mines':{src:'sprites/npc-mines.png'}
+};
+for(const k in NPC_SHEETS) Object.assign(NPC_SHEETS[k],{fw:64,fh:64,ax:32,ay:58});
+
+// Logo oficial, rasterizado do vetor da marca. Proporcao travada no arquivo.
+const LOGO={src:'sprites/rivalo-logo.png', ratio:1600/553};
+
+// Arte de alta da tela de titulo. Se os arquivos existirem, substituem o sprite
+// ampliado; se nao, o titulo continua usando a folha do jogo em 4x.
+const TITLE_ART={
+  didi:{src:'sprites/title-didi.png', optional:true},
+  tami:{src:'sprites/title-tami.png', optional:true}
+};
+// NPCs sao autorados em 64px (~52 de corpo); 1.5x os iguala ao Didi/Tami.
+const NPC_SCALE=1.5;
+
+const ANIM={
+  idle :{row:0,cols:[0,1,2,3],fps:5,loop:true},
+  run  :{row:1,cols:[0,1,2,3,4,5],fps:10,loop:true},
+  jump :{row:2,cols:[0],fps:0,loop:false},
+  fall :{row:2,cols:[1],fps:0,loop:false},
+  throw:{row:3,cols:[0,1],fps:10,loop:false},
+  hurt :{row:3,cols:[2],fps:0,loop:false}
+};
+
+let assetsPending=0, assetsReady=false;
+function loadSheet(def){
+  assetsPending++;
+  const img=new Image();
+  img.onload=()=>{ if(--assetsPending===0){ assetsReady=true; onAssetsReady(); } };
+  img.onerror=()=>{ if(!def.optional) console.error('sprite faltando:',def.src);
+                    def.missing=true;
+                    if(--assetsPending===0){ assetsReady=true; onAssetsReady(); } };
+  img.src=def.src;
+  def.img=img;
+}
+Object.values(HERO_SHEETS).forEach(loadSheet);
+Object.values(NPC_SHEETS).forEach(loadSheet);
+loadSheet(LOGO);
+Object.values(TITLE_ART).forEach(loadSheet);
+
+
+// ---- Fase 2: inimigos, chefe e cenario ------------------------------------
+const ENEMY_SHEETS={
+  cardShark     :{src:'sprites/enemy-cardshark.png',fw:96,fh:96,ax:48,ay:90},
+  diceBruiser   :{src:'sprites/enemy-dice.png'     ,fw:80,fh:80,ax:40,ay:74},
+  slotSentinel  :{src:'sprites/enemy-slot.png'     ,fw:96,fh:96,ax:48,ay:90},
+  rouletteRoller:{src:'sprites/enemy-roulette.png' ,fw:80,fh:80,ax:40,ay:74}
+};
+const BOSS_SHEET={src:'sprites/boss-golem.png',fw:192,fh:192,ax:96,ay:180};
+
+const E_ANIM={
+  cardShark     :{idle:{row:0,cols:4,fps:4},walk:{row:1,cols:6,fps:8},throw:{row:2,cols:3,fps:10},hurt:{row:3,cols:1,fps:0}},
+  diceBruiser   :{roll:{row:0,cols:8,fps:12},hurt:{row:1,cols:1,fps:0},hp2:{row:1,col:1},hp1:{row:1,col:2}},
+  slotSentinel  :{idle:{row:0,cols:4,fps:5},attack:{row:1,cols:3,fps:8},hurt:{row:2,cols:1,fps:0}},
+  rouletteRoller:{spin:{row:0,cols:8,fps:12},hurt:{row:1,cols:1,fps:0}}
+};
+const B_ANIM={
+  spin:{row:0,cols:4,fps:6}, telegraph:{row:1,cols:2,fps:4},
+  slam:{row:2,cols:3,fps:10}, jackpot:{row:3,cols:2,fps:4}
+};
+
+const SCENE={
+  bgFar :{src:'sprites/bg-far.png' ,w:512,h:270,par:0.25},
+  bgMid :{src:'sprites/bg-mid.png' ,w:768,h:200,par:0.60},
+  floor :{src:'sprites/floor.png'  ,w:256,h:120,par:1.00,groundY:90},
+  pillar:{src:'sprites/prop-pillar.png',w:64 ,h:270},
+  exit  :{src:'sprites/prop-exit.png'  ,w:128,h:160,frames:2},
+  pit   :{src:'sprites/prop-pit.png'   ,w:128,h:120},
+  vitrine:{src:'sprites/prop-vitrine.png',w:128,h:128}
+};
+
+Object.values(ENEMY_SHEETS).forEach(loadSheet);
+loadSheet(BOSS_SHEET);
+Object.values(SCENE).forEach(loadSheet);
+
+// frame de um clipe {row, cols, fps}
+function clipFrame(c,t){
+  if(!c) return 0;
+  if(c.col!==undefined) return c.col;
+  if(!c.fps) return 0;
+  return Math.floor(t*c.fps)%c.cols;
+}
+
+function drawSheet(def,row,col,x,y,facing,flash,scale){
+  if(!def||!def.img||!def.img.complete||!def.img.naturalWidth) return;
+  ctx.save();
+  ctx.translate(Math.round(x),Math.round(y));
+  if(scale&&scale!==1) ctx.scale(scale,scale);
+  if(facing<0) ctx.scale(-1,1);
+  if(flash) ctx.globalAlpha=0.35+0.65*(Math.sin(performance.now()/45)>0?1:0);
+  ctx.drawImage(def.img, col*def.fw, row*def.fh, def.fw, def.fh, -def.ax, -def.ay, def.fw, def.fh);
+  ctx.restore();
+}
+
+function frameOf(anim,t){
+  const a=ANIM[anim], n=a.cols.length;
+  if(a.fps<=0) return a.cols[0];
+  const i=Math.floor(t*a.fps);
+  return a.cols[a.loop? i%n : Math.min(i,n-1)];
+}
+
+function drawHero(charId,x,y,facing,anim,t,flash){
+  const def=HERO_SHEETS[charId], a=ANIM[anim];
+  drawSheet(def,a.row,frameOf(anim,t),x,y,facing,flash);
+}
+const GROUND_Y=430;
+const GRAVITY=0.30, JUMP_V=8.0;   // ~0.9s de ar, vao horizontal ~140un
+const LEVEL_WIDTH=5300;
+const BOSS_X=4820;
+const ARENA_LEFT=4585;
+const EXIT_X=5230;
+
+const COL={
+  pink:'#ff2f76', teal:'#1fe8c9', gold:'#ffcb4d', violet:'#2e8dff',
+  cream:'#f3ead9', ink:'#050308', felt:'#0d3d33', felt2:'#124f42'
+};
+
+function rr(x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+
+const keys={};
+window.addEventListener('keydown',e=>{
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code)) e.preventDefault();
+  keys[e.code]=true;
+  if(e.code==='KeyC') swapCharacter();
+});
+window.addEventListener('keyup',e=>{keys[e.code]=false;});
+document.addEventListener('visibilitychange',()=>{ if(document.hidden && state==='playing') setPaused(true); });
+
+function bindHold(el,onDown,onUp){
+  const start=e=>{e.preventDefault();onDown();};
+  const end=e=>{e.preventDefault();onUp();};
+  el.addEventListener('pointerdown',start);
+  el.addEventListener('pointerup',end);
+  el.addEventListener('pointerleave',end);
+  el.addEventListener('pointercancel',end);
+}
+bindHold(document.getElementById('padLeft'), ()=>keys.touchLeft=true, ()=>keys.touchLeft=false);
+bindHold(document.getElementById('padRight'),()=>keys.touchRight=true,()=>keys.touchRight=false);
+bindHold(document.getElementById('padUp'),   ()=>keys.touchJump=true, ()=>keys.touchJump=false);
+bindHold(document.getElementById('btnJump'), ()=>keys.touchJump=true, ()=>keys.touchJump=false);
+bindHold(document.getElementById('btnThrow'),()=>keys.touchThrow=true,()=>keys.touchThrow=false);
+bindHold(document.getElementById('btnSpecial'),()=>keys.touchSpecial=true,()=>keys.touchSpecial=false);
+document.getElementById('btnSwap').addEventListener('pointerdown',e=>{e.preventDefault();swapCharacter();});
+
+function left(){return keys.ArrowLeft||keys.KeyA||keys.touchLeft;}
+function right(){return keys.ArrowRight||keys.KeyD||keys.touchRight;}
+function jumpHeld(){return keys.ArrowUp||keys.KeyW||keys.Space||keys.touchJump;}
+function throwHeld(){return keys.KeyZ||keys.KeyJ||keys.touchThrow;}
+function specialHeld(){return keys.KeyX||keys.KeyK||keys.touchSpecial;}
+
+const CHARS={
+  didi:{name:'Didi',skin:'#d9a066',hair:'#241a12',outfit:'#141220',shirt:'#f3ead9',tie:COL.pink,accent:COL.teal},
+  tami:{name:'Tami',skin:'#caa27c',hair:'#2a1420',outfit:'#3a1030',dress:'#c8123f',accent:COL.gold}
+};
+
+
+// ---- Primitivas em pixel ---------------------------------------------------
+// Tudo alinhado a uma grade de PX unidades para casar com o pixel art dos
+// sprites. Nada de curva suave: os efeitos sao desenhados em blocos.
+const PX=3;
+function snap(v){ return Math.round(v/PX)*PX; }
+
+// Circulo em pixel na resolucao nativa (1 unidade), nao na grade grossa:
+// numa ficha de raio 9 a grade de 3 virava um bloco, nao um disco.
+function pixelDisc(cx,cy,r,col){
+  ctx.fillStyle=col;
+  const x0=Math.round(cx), y0=Math.round(cy), R=Math.round(r);
+  for(let dy=-R;dy<=R;dy++){
+    const w=Math.round(Math.sqrt(Math.max(0,R*R-dy*dy)));
+    if(w<=0) continue;
+    ctx.fillRect(x0-w, y0+dy, w*2, 1);
+  }
+}
+
+function pixelRing(cx,cy,r,ry,col,esp){
+  ctx.fillStyle=col;
+  const passos=Math.max(16, Math.round(r*0.55));
+  for(let i=0;i<passos;i++){
+    const a=(i/passos)*Math.PI*2;
+    const x=snap(cx+Math.cos(a)*r), y=snap(cy+Math.sin(a)*ry);
+    ctx.fillRect(x, y, PX*(esp||1), PX*(esp||1));
+  }
+}
+
+function drawChip(x,y,r,corAro,corMiolo){
+  const X=Math.round(x), Y=Math.round(y), R=Math.round(r);
+  pixelDisc(X,Y,R,'#050308');            // contorno
+  pixelDisc(X,Y,R-1,corAro);             // aro
+  // quatro entalhes claros, marca de ficha de cassino
+  ctx.fillStyle=COL.cream;
+  const e=Math.max(2,Math.round(R*0.34)), t=Math.max(1,Math.round(R*0.30));
+  ctx.fillRect(X-Math.floor(t/2), Y-R+1,   t, e);
+  ctx.fillRect(X-Math.floor(t/2), Y+R-e-1, t, e);
+  ctx.fillRect(X-R+1,   Y-Math.floor(t/2), e, t);
+  ctx.fillRect(X+R-e-1, Y-Math.floor(t/2), e, t);
+  pixelDisc(X,Y,Math.max(2,Math.round(R*0.52)),corMiolo);
+}
+
+function drawCard(x,y,rot){
+  ctx.save(); ctx.translate(x,y); ctx.rotate(rot);
+  ctx.fillStyle='#f3ead9'; rr(-6,-8,12,16,2); ctx.fill();
+  ctx.fillStyle=COL.pink; ctx.font='bold 9px sans-serif'; ctx.textAlign='center';
+  ctx.fillText('♠',0,4);
+  ctx.restore();
+}
+
+function drawCherry(x,y){
+  pixelDisc(x-3,y,3.4,COL.pink);
+  pixelDisc(x+3,y+2,3.4,COL.pink);
+  if(0){
+  }
+  ctx.fillStyle='#2f7a3a';
+  ctx.fillRect(snap(x-1),snap(y-9),PX,PX*2);
+}
+
+// Inimigos por sprite. O estado visual sai do comportamento que a IA ja roda:
+// quem se move anda, quem tem cd baixo esta atacando, quem levou dano recua.
+function enemyClip(e){
+  const A=E_ANIM[e.type];
+  if(e.hitCd>0.12 && A.hurt) return A.hurt;
+  if(e.type==='cardShark')      return e.atkT>0 ? A.throw : (Math.abs(e.vxLast||0)>0.05 ? A.walk : A.idle);
+  if(e.type==='slotSentinel')   return e.atkT>0 ? A.attack : A.idle;
+  if(e.type==='diceBruiser')    return A.roll;
+  if(e.type==='rouletteRoller') return A.spin;
+  return A.idle;
+}
+
+function drawEnemy(e){
+  const def=ENEMY_SHEETS[e.type];
+  const clip=enemyClip(e);
+  // dado e roleta giram sozinhos: o ciclo acompanha o deslocamento percorrido
+  const t = (e.type==='diceBruiser'||e.type==='rouletteRoller') ? (e.spinT||e.t) : e.t;
+  drawSheet(def, clip.row, clipFrame(clip,t), e.x-camX, e.y, e.facing, e.hitCd>0.12);
+}
+
+function drawJackpotGolem(b){
+  const clip=B_ANIM[b.state]||B_ANIM.spin;
+  drawSheet(BOSS_SHEET, clip.row, clipFrame(clip,b.t), b.x-camX, b.y, 1, false);
+}
+
+function drawNpcPod(n){
+  const x=n.x-camX, y=n.y;
+  if(x<-90||x>VIEW_W+90) return;
+  const def=NPC_SHEETS[n.kind], v=SCENE.vitrine;
+  const bob=Math.sin(n.t*2)*2;
+
+  ctx.fillStyle='rgba(0,0,0,0.4)';
+  ctx.beginPath(); ctx.ellipse(x,y+2,34,8,0,0,Math.PI*2); ctx.fill();
+
+  // NPC por dentro, vitrine por cima (o vidro fecha na frente)
+  drawSheet(def,0,Math.floor(n.t*3)%2,x,y-10+bob,1,false,NPC_SCALE);
+  if(v.img&&v.img.complete&&v.img.naturalWidth)
+    ctx.drawImage(v.img, Math.round(x-v.w/2), Math.round(y-v.h+6));
+
+  ctx.fillStyle=COL.gold; ctx.font='900 11px "Arial Black",sans-serif'; ctx.textAlign='center';
+  ctx.fillText('\u{1F512} '+n.name.toUpperCase(), x, Math.max(y-v.h-2, camY+54));
+}
+
+// Plataforma: borda dourada em cima (onde se pousa) e corpo marinho.
+function drawPlatform(p){
+  const x=p.x-camX;
+  if(x+p.w/2<-20||x-p.w/2>W+20) return;
+  const l=x-p.w/2;
+  ctx.fillStyle='rgba(0,0,0,0.35)'; rr(l+4,p.y+4,p.w,12,3); ctx.fill();
+  ctx.fillStyle='#1d4174'; rr(l,p.y,p.w,14,3); ctx.fill();
+  ctx.fillStyle=COL.gold; ctx.fillRect(l+2,p.y,p.w-4,3);
+  ctx.fillStyle='rgba(46,141,255,0.55)';
+  for(let i=8;i<p.w-8;i+=18){ ctx.fillRect(l+i,p.y+7,8,3); }
+}
+
+const player={
+  x:80,y:GROUND_Y,vx:0,vy:0,onGround:true,facing:1,
+  hp:3,invuln:0,throwCd:0,phase:0,charId:'didi',checkpoint:80,
+  score:0,bob:0,coyote:0,
+  special:0, dashT:0, dashHit:null,
+  anim:'idle',animT:0,throwT:0,hurtT:0
+};
+
+function pickAnim(){
+  if(player.hurtT>0) return 'hurt';
+  if(player.throwT>0) return 'throw';
+  if(!player.onGround) return player.vy<0 ? 'jump' : 'fall';
+  if(Math.abs(player.vx)>0.4) return 'run';
+  return 'idle';
+}
+function advanceAnim(dt){
+  player.throwT=Math.max(0,player.throwT-dt);
+  player.hurtT =Math.max(0,player.hurtT-dt);
+  const next=pickAnim();
+  if(next!==player.anim){ player.anim=next; player.animT=0; }
+  else player.animT+=dt;
+}
+let companionId='tami';
+function swapCharacter(){
+  const t=player.charId; player.charId=companionId; companionId=t;
+  spawnFloatText(player.x-camX,player.y-70,'troca!',COL.teal);
+}
+
+let camX=0;
+let shock=null, ghosts=[], saidaLiberadaT=0;
+let projectiles=[], enemyProjectiles=[], enemies=[], pickups=[], particles=[], floatTexts=[];
+let boss=null, bossActive=false, bossDefeated=false;
+let state='title';
+let lastTime=0;
+
+const PITS=[{s:980,e:1095},{s:2260,e:2375},{s:3480,e:3595}];
+function overPit(x){ return PITS.some(p=>x>p.s+14 && x<p.e-14); }
+
+function makeEnemy(type,x,extra){
+  const base={type,x,y:GROUND_Y,t:Math.random()*10,facing:-1,alive:true,hitCd:0};
+  if(type==='cardShark') Object.assign(base,{hp:2,speed:0.6,range:220,cd:0,homeX:x});
+  if(type==='diceBruiser') Object.assign(base,{hp:2,speed:0.9,range:260,rot:0,homeX:x});
+  if(type==='slotSentinel') Object.assign(base,{hp:2,cd:0,range:260});
+  if(type==='rouletteRoller') Object.assign(base,{hp:1,speed:0,rot:0,range:300,dashing:false});
+  return Object.assign(base,extra||{});
+}
+
+const SPAWN_TABLE=[
+  ['cardShark',480],['slotSentinel',760],['diceBruiser',1240],['cardShark',1560],
+  ['rouletteRoller',1820],['slotSentinel',2080],['diceBruiser',2560],['cardShark',2820],
+  ['rouletteRoller',3080],['slotSentinel',3320],['diceBruiser',3760],['cardShark',4020],
+  ['rouletteRoller',4220],['slotSentinel',4440]
+];
+const PICKUP_TABLE=[300,660,1000,1420,1700,1980,2340,2700,2980,3260,3700,3980,4260,4520,4760];
+
+// Plataformas de mao unica: pousa por cima, atravessa por baixo.
+// Alturas calibradas pelo pulo (apice ~103un): 80 e um salto do chao,
+// 142 exige o degrau intermediario.
+const PLATFORMS=[
+  {x:1380,y:GROUND_Y-80 ,w:112},                        // dragao
+  {x:2500,y:GROUND_Y-72 ,w:92 },{x:2620,y:GROUND_Y-142,w:112}, // aviador
+  {x:3080,y:GROUND_Y-70 ,w:86 },{x:3180,y:GROUND_Y-140,w:104}, // olimpo
+  {x:3760,y:GROUND_Y-75 ,w:92 },{x:3860,y:GROUND_Y-145,w:112}  // roleta
+];
+
+// alt = altura do resgate; pts escala com a dificuldade de alcancar.
+const NPC_TABLE=[
+  ['npc-tiger'   , 620,'Tigre da Sorte'     ,  0,150],
+  ['npc-dragon'  ,1380,'Dragão Dourado'     , 80,250],
+  ['npc-rabbit'  ,2140,'Coelho Fortuna'     ,  0,150],
+  ['npc-aviator' ,2620,'Piloto Aviador'     ,142,400],
+  ['npc-olympus' ,3180,'Titã do Olimpo'     ,140,400],
+  ['npc-roulette',3860,'Espírito da Roleta' ,145,400],
+  ['npc-mines'   ,4620,'Gema das Minas'     ,  0,150]
+];
+let npcs=[], rescued=0;
+
+function resetLevel(){
+  camX=0; camY=CAM_Y; projectiles=[]; enemyProjectiles=[]; particles=[]; floatTexts=[];
+  enemies=SPAWN_TABLE.map(s=>makeEnemy(s[0],s[1]));
+  pickups=PICKUP_TABLE.map((x,i)=>({x,y:GROUND_Y-10,type:i%5===4?'heart':'chip',taken:false}));
+  npcs=NPC_TABLE.map(n=>({kind:n[0],x:n[1],name:n[2],y:GROUND_Y-n[3],pts:n[4],taken:false,t:Math.random()*10}));
+  rescued=0;
+  boss=null; bossActive=false; bossDefeated=false;
+  player.x=80; player.y=GROUND_Y; player.vx=0; player.vy=0; player.hp=3; player.invuln=0;
+  player.checkpoint=80; player.score=0; player.onGround=true;
+  player.special=0; player.dashT=0; shock=null; ghosts=[];
+}
+
+function spawnFloatText(x,y,text,color){
+  floatTexts.push({x,y,text,color,t:0});
+}
+function spawnBurst(x,y,color,n){
+  for(let i=0;i<(n||8);i++){
+    particles.push({x,y,vx:(Math.random()-0.5)*5,vy:-Math.random()*4-1,life:0.5+Math.random()*0.3,color});
+  }
+}
+
+function ganharCarga(v){
+  const antes=player.special;
+  player.special=Math.min(100, player.special+v);
+  if(antes<100 && player.special>=100){
+    SND.fx('charge');
+    spawnFloatText(player.x-camX, player.y-96, 'GOLPE PRONTO!', COL.teal);
+  }
+}
+
+function damagePlayer(kx){
+  if(player.invuln>0) return;
+  player.hp--; player.invuln=1.3; player.hurtT=0.45; SND.fx('hurt');
+  player.vx=(player.x<kx?-1:1)*4; player.vy=-4;
+  spawnBurst(player.x-camX,player.y-40,COL.pink,10);
+  if(player.hp<=0){ endGame(false); }
+}
+
+function update(dt){
+  if(state!=='playing') return;
+
+  player.throwCd-=dt; player.invuln=Math.max(0,player.invuln-dt);
+  let moving=false;
+  if(left()){ player.vx=-2.6; player.facing=-1; moving=true; }
+  else if(right()){ player.vx=2.6; player.facing=1; moving=true; }
+  else player.vx*=0.8;
+
+  if(jumpHeld() && (player.onGround||player.coyote>0)){ player.vy=-JUMP_V; player.onGround=false; player.coyote=0; SND.fx('jump'); }
+  if(throwHeld() && player.throwCd<=0){
+    player.throwCd=0.32; player.throwT=0.22; SND.fx('throw_');
+    projectiles.push({x:player.x+player.facing*30,y:player.y-48,vx:player.facing*9,r:6});
+  }
+
+  // Fisica em passos de 60Hz para o jogo nao acelerar em telas de 120Hz.
+  const k=Math.min(2, dt*60);
+  const prevY=player.y;
+  // ---- Golpe especial ------------------------------------------------------
+  // Didi: onda de fichas que varre a tela. Tami: investida que atravessa.
+  if(specialHeld() && player.special>=100 && player.dashT<=0){
+    player.special=0;
+    if(player.charId==='didi'){
+      shock={x:player.x, y:player.y-40, r:14, t:0};
+      SND.fx('special');
+      enemies.forEach(e=>{
+        if(e.alive && Math.abs(e.x-player.x)<230){
+          e.hp-=3; e.hitCd=0.4;
+          spawnBurst(e.x-camX,e.y-30,COL.gold,10);
+          if(e.hp<=0){ e.alive=false; player.score+=100; spawnFloatText(e.x-camX,e.y-50,'+100',COL.gold); }
+        }
+      });
+      if(bossActive && boss && !bossDefeated && Math.abs(boss.x-player.x)<260){
+        boss.hp-=4; SND.fx('bossHit');
+      }
+      // leque de fichas
+      for(let i=-3;i<=3;i++)
+        projectiles.push({x:player.x, y:player.y-48, vx:player.facing*(7+Math.abs(i)), vyf:i*1.1, r:7, big:true});
+    } else {
+      player.dashT=0.38; player.dashHit=new Set();
+      SND.fx('dash');
+    }
+  }
+
+  if(player.dashT>0){
+    // Freia na beira do buraco: a investida nao pode virar morte automatica.
+    if(player.onGround && overPit(player.x+player.facing*26)) player.dashT=0;
+  }
+  if(player.dashT>0){
+    player.dashT-=dt;
+    player.vx=player.facing*8.2;
+    player.invuln=Math.max(player.invuln,0.08);
+    if(Math.random()<0.7) ghosts.push({x:player.x-camX, y:player.y, f:player.facing, id:player.charId, t:0});
+    enemies.forEach(e=>{
+      if(!e.alive||player.dashHit.has(e)) return;
+      if(Math.abs(e.x-player.x)<36 && Math.abs(e.y-player.y)<58){
+        player.dashHit.add(e); e.hp-=2; e.hitCd=0.4;
+        spawnBurst(e.x-camX,e.y-30,COL.teal,10);
+        if(e.hp<=0){ e.alive=false; player.score+=100; SND.fx('kill'); spawnFloatText(e.x-camX,e.y-50,'+100',COL.gold); }
+      }
+    });
+    if(bossActive && boss && !bossDefeated && Math.abs(boss.x-player.x)<70 && !player.dashHit.has(boss)){
+      player.dashHit.add(boss); boss.hp-=3; SND.fx('bossHit');
+    }
+  }
+
+  player.vy+=GRAVITY*k;
+  player.x+=player.vx*k; player.y+=player.vy*k;
+  player.x=Math.max(20,Math.min(LEVEL_WIDTH-20,player.x));
+
+  // Plataformas: so colidem na descida e so se os pes vinham de cima delas.
+  let landed=false;
+  if(player.vy>0){
+    for(const p of PLATFORMS){
+      if(player.x>p.x-p.w/2 && player.x<p.x+p.w/2 && prevY<=p.y && player.y>=p.y){
+        player.y=p.y; player.vy=0; landed=true; break;
+      }
+    }
+  }
+  if(!landed){
+    const inPit=overPit(player.x);
+    if(!inPit && player.y>=GROUND_Y){ player.y=GROUND_Y; player.vy=0; landed=true; }
+  }
+  player.onGround=landed;
+  // Coyote time: alguns quadros de tolerancia para pular apos deixar a borda.
+  player.coyote = player.onGround ? 0.12 : Math.max(0, player.coyote-dt);
+
+  if(player.y>GROUND_Y+70){
+    player.x=player.checkpoint; player.y=GROUND_Y; player.vy=0; player.vx=0;
+    damagePlayer(player.x+1);
+  }
+  if(player.onGround && player.y===GROUND_Y && !overPit(player.x) && player.x-player.checkpoint>60) player.checkpoint=player.x-40;
+
+  advanceAnim(dt);
+
+  const camTarget=Math.max(0, Math.min(player.x-VIEW_W*0.42, LEVEL_WIDTH-VIEW_W));
+  if(!bossActive || bossDefeated) camX+= (camTarget-camX)*0.12;
+
+  // Vertical: mantem o chao enquadrado e sobe junto quando o jogador plataforma.
+  const camYTarget=Math.min(CAM_Y, player.y-VIEW_H*0.45);
+  camY+= (camYTarget-camY)*0.10;
+
+  projectiles.forEach(p=>{ p.x+=p.vx; if(p.vyf!==undefined){ p.y+=p.vyf; p.vyf*=0.97; } });
+  projectiles=projectiles.filter(p=> p.x-camX>-20 && p.x-camX<VIEW_W+20);
+
+  enemyProjectiles.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=(p.grav||0); });
+  enemyProjectiles=enemyProjectiles.filter(p=> p.x-camX>-30 && p.x-camX<W+30 && p.y<GROUND_Y+20);
+
+  enemies.forEach(e=>{
+    if(!e.alive) return;
+    e.t+=dt; e.hitCd=Math.max(0,e.hitCd-dt);
+    e.atkT=Math.max(0,(e.atkT||0)-dt);
+    const exBefore=e.x;
+    const dx=player.x-e.x;
+    if(e.type==='cardShark'){
+      e.facing=dx<0?-1:1;
+      if(Math.abs(dx)<e.range){
+        e.cd-=dt;
+        if(e.cd<=0){ e.cd=1.3+Math.random()*0.4; e.atkT=0.30; enemyProjectiles.push({x:e.x,y:e.y-40,vx:e.facing*4.6,y0:e.y-26,kind:'card',rot:0}); }
+        e.x+= Math.abs(dx)>90 ? Math.sign(dx)*e.speed : 0;
+      } else {
+        e.x+= Math.sin(e.t)*0.4;
+      }
+      e.x=Math.min(e.homeX+70,Math.max(e.homeX-70,e.x));
+    }
+    if(e.type==='diceBruiser'){
+      e.rot+=0.05*(e.facing);
+      if(Math.abs(dx)<e.range){ e.facing=dx<0?-1:1; e.x+=e.facing*e.speed; }
+    }
+    if(e.type==='slotSentinel'){
+      if(Math.abs(dx)<e.range){
+        e.cd-=dt;
+        if(e.cd<=0){ e.cd=1.5+Math.random()*0.6; e.atkT=0.32; enemyProjectiles.push({x:e.x,y:e.y-52,vx:(dx<0?-1:1)*3.2,vy:-4,grav:0.25,kind:'cherry'}); }
+      }
+    }
+    if(e.type==='rouletteRoller'){
+      if(!e.dashing && Math.abs(dx)<e.range && Math.abs(dx)>20){ e.dashing=true; e.facing=dx<0?-1:1; }
+      if(e.dashing){ e.x+=e.facing*4.6; e.rot+=e.facing*0.3; if(Math.abs(dx)>420) e.dashing=false; }
+    }
+
+    e.vxLast=e.x-exBefore;
+    e.spinT=(e.spinT||0)+Math.abs(e.vxLast)*0.05+dt*0.35;
+
+    if(Math.abs(e.x-player.x)<30 && Math.abs(e.y-player.y)<56 && e.hitCd<=0){
+      damagePlayer(e.x); e.hitCd=0.9;
+    }
+    projectiles.forEach(p=>{
+      if(p.hit) return;
+      if(Math.abs(p.x-e.x)<20 && Math.abs(p.y-(e.y-24))<26){
+        p.hit=true; e.hp--; e.hitCd=0.3; SND.fx('hit'); ganharCarga(6);
+        spawnBurst(e.x-camX,e.y-24-camXzero(),COL.gold,6);
+        if(e.hp<=0){ e.alive=false; player.score+=100; SND.fx('kill'); spawnFloatText(e.x-camX,e.y-50,'+100',COL.gold); }
+      }
+    });
+  });
+  enemies=enemies.filter(e=>e.alive || performance.now()>0);
+  projectiles=projectiles.filter(p=>!p.hit);
+
+  enemyProjectiles.forEach(p=>{
+    if(Math.abs(p.x-player.x)<20 && p.y>player.y-76 && p.y<player.y-4 && player.invuln<=0){
+      damagePlayer(p.x); p.dead=true;
+    }
+  });
+  enemyProjectiles=enemyProjectiles.filter(p=>!p.dead);
+
+  pickups.forEach(pk=>{
+    if(pk.taken) return;
+    if(Math.abs(pk.x-player.x)<30 && Math.abs(pk.y-player.y)<48){
+      pk.taken=true;
+      SND.fx('coin'); ganharCarga(10);
+      if(pk.type==='heart'){ player.hp=Math.min(3,player.hp+1); spawnFloatText(pk.x-camX,pk.y-40,'+1 vida',COL.teal); }
+      else { player.score+=25; spawnFloatText(pk.x-camX,pk.y-40,'+25',COL.gold); }
+    }
+  });
+
+  npcs.forEach(n=>{
+    n.t+=dt;
+    if(n.taken) return;
+    // Resgate exige estar na altura do NPC, nao 80un abaixo dele —
+    // e o que obriga a subir na plataforma em vez de pegar do chao.
+    if(Math.abs(n.x-player.x)<34 && Math.abs(n.y-player.y)<32){
+      n.taken=true; rescued++; player.score+=n.pts; SND.fx('rescue'); ganharCarga(30);
+      spawnBurst(n.x-camX,n.y-30,COL.teal,16);
+      spawnFloatText(n.x-camX,n.y-56,n.name+' salvo! +'+n.pts,COL.gold);
+    }
+  });
+
+  if(!bossActive && !bossDefeated && player.x>=BOSS_X-40){
+    bossActive=true;
+    boss={x:BOSS_X+70,y:GROUND_Y,hp:26,maxHp:26,state:'spin',t:0,reels:['7','7','7']};
+    SND.play('boss');
+  }
+  // Depois de derrotado o chefe para de agir: antes ele continuava no ciclo
+  // de golpes e matava o jogador mesmo morto, travando a vitoria.
+  if(bossActive && boss && !bossDefeated){
+    boss.t+=dt;
+    camX+= ( (ARENA_LEFT) - camX)*0.15;
+    const symPool=['7','★','♦','🍒'];
+    if(boss.state==='spin'){
+      boss.reels=boss.reels.map((_,i)=>symPool[Math.floor((boss.t*6+i*2))%symPool.length]);
+      if(boss.t>1.6){ boss.state='telegraph'; boss.t=0; boss.outcome=Math.random()<0.42?'jackpot':'slam'; }
+    } else if(boss.state==='telegraph'){
+      if(boss.t>0.55){
+        if(boss.outcome==='jackpot'){ boss.reels=['7','7','7']; boss.state='jackpot'; boss.t=0; }
+        else { boss.reels=['★','★','💀']; boss.state='slam'; boss.t=0; }
+      }
+    } else if(boss.state==='slam'){
+      if(boss.t>0.15 && boss.t<0.32 && !player.onGround===false){
+        if(Math.abs(player.x-boss.x)<210 && player.onGround){ damagePlayer(boss.x); }
+      }
+      if(boss.t>0.9){ boss.state='spin'; boss.t=0; }
+    } else if(boss.state==='jackpot'){
+      if(boss.t>1.6){ boss.state='spin'; boss.t=0; }
+    }
+    const dmgMul= boss.state==='jackpot' ? 2 : 1;
+    projectiles.forEach(p=>{
+      if(p.hit) return;
+      if(Math.abs(p.x-boss.x)<70 && Math.abs(p.y-(boss.y-96))<95){
+        p.hit=true; boss.hp-=1*dmgMul; SND.fx('bossHit'); spawnBurst(boss.x-camX,boss.y-96,COL.teal,6);
+        if(boss.hp<=0 && !bossDefeated){
+          bossDefeated=true; SND.play('game'); SND.fx('rescue');
+          spawnBurst(boss.x-camX,boss.y-90,COL.gold,40);
+          player.score+=1000;
+          saidaLiberadaT=4.0;
+        }
+      }
+    });
+    projectiles=projectiles.filter(p=>!p.hit);
+  }
+
+  if(bossDefeated && player.x>=EXIT_X-20){ endGame(true); }
+
+  saidaLiberadaT=Math.max(0,saidaLiberadaT-dt);
+  if(shock){ shock.t+=dt; shock.r+=340*dt; if(shock.t>0.55) shock=null; }
+  ghosts.forEach(g=>g.t+=dt);
+  ghosts=ghosts.filter(g=>g.t<0.26);
+
+  particles.forEach(pt=>{ pt.x+=pt.vx; pt.y+=pt.vy; pt.vy+=0.2; pt.life-=dt; });
+  particles=particles.filter(pt=>pt.life>0);
+  floatTexts.forEach(f=>f.t+=dt);
+  floatTexts=floatTexts.filter(f=>f.t<1.1);
+}
+function camXzero(){return 0;}
+
+
+// Letreiro do fundo: PNG do logo oficial, sem deformacao — a altura sai
+// sempre da proporcao original do arquivo.
+function drawRivaloSign(x,y,w,alpha){
+  const img=LOGO.img;
+  if(alpha<=0.01||!img||!img.complete||!img.naturalWidth) return;
+  const h=w/LOGO.ratio;
+  ctx.save();
+  ctx.globalAlpha=alpha;
+  ctx.shadowColor='#2e8dff';
+  ctx.shadowBlur=w*0.10;
+  ctx.drawImage(img, Math.round(x-w/2), Math.round(y-h/2), Math.round(w), Math.round(h));
+  ctx.restore();
+}
+
+function tileLayer(s, worldY, par){
+  const img=s.img;
+  if(!img||!img.complete||!img.naturalWidth) return;
+  const off=((camX*par)%s.w+s.w)%s.w;
+  for(let x=-off; x<VIEW_W+s.w; x+=s.w) ctx.drawImage(img, Math.round(x), Math.round(worldY));
+}
+
+function drawBackground(){
+  ctx.fillStyle='#050b16'; ctx.fillRect(0,camY,VIEW_W,VIEW_H);
+
+  tileLayer(SCENE.bgFar, GROUND_Y-SCENE.bgFar.h+24, SCENE.bgFar.par);
+
+  // rodape da parede com a faixa de neon na linha do chao
+  tileLayer(SCENE.floor, GROUND_Y-SCENE.floor.groundY, SCENE.floor.par);
+
+  // mobiliario apoiado na linha do chao, na frente do rodape
+  tileLayer(SCENE.bgMid, GROUND_Y-SCENE.bgMid.h, SCENE.bgMid.par);
+
+  const pil=SCENE.pillar;
+  if(pil.img&&pil.img.complete&&pil.img.naturalWidth){
+    const gap=640, off=((camX*0.45)%gap+gap)%gap;
+    for(let x=-off; x<VIEW_W+gap; x+=gap)
+      ctx.drawImage(pil.img, Math.round(x), Math.round(GROUND_Y-pil.h+30));
+  }
+
+  const SIGN_GAP=620, SIGN_W=104;
+  for(let i=0;i<8;i++){
+    const bx=(i*SIGN_GAP - camX*0.5) % (SIGN_GAP*8);
+    const x=((bx+SIGN_GAP*8)%(SIGN_GAP*8))-SIGN_GAP;
+    if(x<-SIGN_W||x>VIEW_W+SIGN_W) continue;
+    drawRivaloSign(x, 268, SIGN_W, 0.30+0.26*Math.sin(performance.now()/1450+i*1.7));
+  }
+
+  const ex=SCENE.exit;
+  if(ex.img&&ex.img.complete&&ex.img.naturalWidth){
+    const sx=(bossDefeated?1:0)*ex.w;
+    ctx.drawImage(ex.img, sx,0,ex.w,ex.h,
+                  Math.round(EXIT_X-camX), Math.round(GROUND_Y-ex.h), ex.w, ex.h);
+  }
+}
+
+function drawGround(){
+  // piso solido abaixo da linha do chao, depois os buracos por cima
+  ctx.fillStyle='#071226';
+  ctx.fillRect(0,GROUND_Y+30,VIEW_W,camY+VIEW_H-GROUND_Y-30);
+
+  const pit=SCENE.pit;
+  PITS.forEach(p=>{
+    const x0=p.s-camX, w=p.e-p.s;
+    if(x0+w<-20||x0>VIEW_W+20) return;
+    ctx.fillStyle='#02060e'; ctx.fillRect(x0,GROUND_Y,w,camY+VIEW_H-GROUND_Y);
+    if(pit.img&&pit.img.complete&&pit.img.naturalWidth)
+      ctx.drawImage(pit.img, Math.round(x0+w/2-pit.w/2), Math.round(GROUND_Y-6));
+  });
+}
+
+function drawRescueBar(){
+  const n=NPC_TABLE.length, cell=52, gap=6;
+  const totalW=n*cell+(n-1)*gap;
+  const x0=(W-totalW)/2, y0=H-64;
+
+  ctx.fillStyle='rgba(5,11,22,0.72)';
+  rr(x0-12,y0-16,totalW+24,72,10); ctx.fill();
+  ctx.strokeStyle='rgba(46,141,255,0.45)'; ctx.lineWidth=2;
+  rr(x0-12,y0-16,totalW+24,72,10); ctx.stroke();
+
+  ctx.textAlign='center';
+  ctx.fillStyle='rgba(243,234,217,0.5)';
+  ctx.font='900 9px "Arial Black",sans-serif';
+  ctx.fillText('RESGATADOS', W/2, y0-4);
+
+  for(let i=0;i<n;i++){
+    const cx=x0+i*(cell+gap), cy=y0+2;
+    const got=npcs[i] && npcs[i].taken;
+
+    ctx.fillStyle = got ? 'rgba(31,232,201,0.12)' : 'rgba(255,255,255,0.05)';
+    rr(cx,cy,cell,cell,6); ctx.fill();
+    ctx.strokeStyle = got ? COL.teal : 'rgba(255,255,255,0.16)';
+    ctx.lineWidth=2; rr(cx,cy,cell,cell,6); ctx.stroke();
+
+    if(got){
+      const def=NPC_SHEETS[NPC_TABLE[i][0]];
+      if(def&&def.img&&def.img.complete&&def.img.naturalWidth){
+        ctx.drawImage(def.img,0,0,def.fw,def.fh,cx+2,cy+2,cell-4,cell-4);
+      }
+    } else {
+      ctx.fillStyle='rgba(255,255,255,0.28)';
+      ctx.font='900 20px "Arial Black",sans-serif';
+      ctx.fillText('?', cx+cell/2, cy+cell/2+7);
+    }
+  }
+}
+
+function drawHUD(){
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.fillStyle='rgba(5,3,10,0.55)'; rr(14,12,230,90,8); ctx.fill();
+  ctx.strokeStyle='rgba(255,203,77,0.4)'; ctx.lineWidth=2; rr(14,12,230,90,8); ctx.stroke();
+
+  ctx.fillStyle=CHARS[player.charId].accent; rr(22,20,30,30,6); ctx.fill();
+  ctx.fillStyle=COL.ink; ctx.font='900 15px "Arial Black",sans-serif'; ctx.textAlign='center';
+  ctx.fillText(player.charId==='didi'?'D':'T', 37, 42);
+
+  ctx.textAlign='left'; ctx.fillStyle=COL.cream; ctx.font='900 15px "Arial Black",sans-serif';
+  ctx.fillText('1P '+CHARS[player.charId].name.toUpperCase(), 60, 32);
+
+  for(let i=0;i<3;i++){
+    const hx=60+i*24,hy=40;
+    ctx.fillStyle= i<player.hp? COL.pink : 'rgba(255,255,255,0.18)';
+    rr(hx,hy,20,10,2); ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,0.5)'; ctx.lineWidth=1.5; rr(hx,hy,20,10,2); ctx.stroke();
+  }
+
+  // medidor do golpe especial
+  const pronto=player.special>=100;
+  const bx=60, by=54, bw2=118, bh=9;
+  ctx.fillStyle='rgba(255,255,255,0.12)'; rr(bx,by,bw2,bh,4); ctx.fill();
+  if(pronto){
+    const pul=0.6+0.4*Math.sin(performance.now()/120);
+    ctx.fillStyle=COL.gold; ctx.shadowColor='rgba(255,203,77,'+pul.toFixed(2)+')'; ctx.shadowBlur=10;
+  } else ctx.fillStyle=COL.teal;
+  rr(bx,by,bw2*(player.special/100),bh,4); ctx.fill();
+  ctx.shadowBlur=0;
+  ctx.fillStyle= pronto? COL.gold : 'rgba(255,255,255,0.45)';
+  ctx.font='900 9px "Arial Black",sans-serif'; ctx.textAlign='left';
+  ctx.fillText(pronto? 'GOLPE PRONTO  [X]' : 'GOLPE', bx, by+20);
+
+  ctx.textAlign='left';
+  ctx.fillStyle=COL.teal; ctx.font='900 14px "Arial Black",sans-serif';
+  ctx.fillText(rescued+'/'+NPC_TABLE.length+' RESGATADOS', 22, 92);
+
+  ctx.textAlign='center'; ctx.fillStyle=COL.gold; ctx.font='900 20px "Arial Black",sans-serif';
+  ctx.shadowColor='rgba(255,203,77,0.5)'; ctx.shadowBlur=6;
+  ctx.fillText('STAGE 1 · CASSINO FLOOR', W/2, 34);
+  ctx.shadowBlur=0;
+
+  ctx.textAlign='right';
+  ctx.fillStyle='rgba(255,255,255,0.55)'; ctx.font='900 12px "Arial Black",sans-serif';
+  ctx.fillText('SCORE', W-24, 26);
+  ctx.fillStyle=COL.gold; ctx.font='900 30px "SFMono-Regular",Consolas,monospace';
+  ctx.fillText(String(player.score).padStart(6,'0'), W-24, 54);
+  ctx.fillStyle='rgba(255,255,255,0.45)'; ctx.font='900 11px "Arial Black",sans-serif';
+  ctx.fillText('CREDITS 1', W-24, 70);
+
+  // Depois do chefe: diz o que fazer, senao o jogador nao sabe que venceu
+  if(bossDefeated){
+    ctx.textAlign='center';
+    if(saidaLiberadaT>0){
+      const pul=0.6+0.4*Math.sin(performance.now()/110);
+      ctx.font='900 30px "Arial Black",sans-serif';
+      ctx.lineJoin='round'; ctx.lineWidth=8; ctx.strokeStyle='rgba(5,11,22,.9)';
+      ctx.strokeText('SAIDA LIBERADA!', W/2, 200);
+      ctx.fillStyle='rgba(31,232,201,'+pul.toFixed(2)+')';
+      ctx.fillText('SAIDA LIBERADA!', W/2, 200);
+    }
+    ctx.font='900 15px "Arial Black",sans-serif';
+    ctx.lineWidth=6; ctx.strokeStyle='rgba(5,11,22,.9)';
+    ctx.strokeText('CORRA PARA A SAIDA  \u25B6', W/2, 240);
+    ctx.fillStyle=COL.gold;
+    ctx.fillText('CORRA PARA A SAIDA  \u25B6', W/2, 240);
+  }
+
+  drawRescueBar();
+
+  if(bossActive && boss && !bossDefeated){
+    const bw=440;
+    ctx.fillStyle='rgba(5,3,10,0.7)'; rr(W/2-bw/2-4,84,bw+8,30,8); ctx.fill();
+    ctx.strokeStyle=COL.violet; ctx.lineWidth=2; rr(W/2-bw/2-4,84,bw+8,30,8); ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,0.12)'; rr(W/2-bw/2,90,bw,10,5); ctx.fill();
+    ctx.fillStyle=COL.pink; rr(W/2-bw/2,90,bw*Math.max(0,boss.hp/boss.maxHp),10,5); ctx.fill();
+    ctx.fillStyle=COL.cream; ctx.font='900 13px "Arial Black",sans-serif'; ctx.textAlign='center';
+    ctx.fillText('JACKPOT GOLEM', W/2, 106);
+  }
+}
+
+
+// ---- Tela de atracao -------------------------------------------------------
+// Roda no canvas com o cenario vivo atras, logo da marca e os dois herois em
+// idle. O selecionado fica aceso; o outro recua em brilho.
+let titleT=0, titleCam=0;
+
+function drawTitleScreen(dt){
+  titleT+=dt; titleCam+=dt*26;
+  const camBak=camX, camYBak=camY;
+  camX=titleCam; camY=CAM_Y;
+
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.imageSmoothingEnabled=false;
+  ctx.clearRect(0,0,W,H);
+
+  ctx.save();
+  ctx.setTransform(ZOOM,0,0,ZOOM,0,-camY*ZOOM);
+  drawBackground();
+  drawGround();
+  ctx.restore();
+  camX=camBak; camY=camYBak;
+
+  // escurece o cenario para os herois dominarem as laterais
+  ctx.fillStyle='rgba(5,11,22,0.62)';
+  ctx.fillRect(0,0,W,H);
+
+  // ---- herois full-bleed nas laterais (escala inteira 4x) ----
+  const SC=4, baseY=506;
+  const lado=[
+    {id:'didi', x:120, face: 1, nomeX:26,    align:'left' },
+    {id:'tami', x:840, face:-1, nomeX:W-26,  align:'right'}
+  ];
+
+  lado.forEach(L=>{
+    const on=(player.charId===L.id);
+
+    // facho de luz atras do selecionado
+    const g=ctx.createLinearGradient(L.x,60,L.x,baseY);
+    g.addColorStop(0,'rgba(0,0,0,0)');
+    g.addColorStop(1, on?'rgba(255,203,77,0.16)':'rgba(46,141,255,0.07)');
+    ctx.fillStyle=g;
+    ctx.beginPath();
+    ctx.moveTo(L.x-42,60); ctx.lineTo(L.x+42,60);
+    ctx.lineTo(L.x+150,baseY); ctx.lineTo(L.x-150,baseY);
+    ctx.closePath(); ctx.fill();
+
+    ctx.fillStyle= on?'rgba(255,203,77,0.26)':'rgba(46,141,255,0.12)';
+    ctx.beginPath(); ctx.ellipse(L.x,baseY+6,120,20,0,0,Math.PI*2); ctx.fill();
+
+    const art=TITLE_ART[L.id];
+    if(art.img && art.img.complete && art.img.naturalWidth){
+      // Arte dedicada: escala suave, altura alvo fixa
+      const alvoH=430, k=alvoH/art.img.naturalHeight;
+      const aw=art.img.naturalWidth*k;
+      ctx.save();
+      ctx.globalAlpha = on?1:0.42;
+      ctx.imageSmoothingEnabled=true;
+      ctx.imageSmoothingQuality='high';
+      ctx.translate(L.x, baseY);
+      if(L.face<0) ctx.scale(-1,1);
+      ctx.drawImage(art.img, -aw/2, -alvoH, aw, alvoH);
+      ctx.restore();
+      ctx.imageSmoothingEnabled=false;
+    } else {
+      // Fallback: folha do jogo ampliada em escala inteira
+      const def=HERO_SHEETS[L.id], a=ANIM.idle;
+      const col=a.cols[Math.floor(titleT*a.fps)%a.cols.length];
+      ctx.save();
+      ctx.globalAlpha = on?1:0.42;
+      ctx.translate(L.x, baseY);
+      ctx.scale(SC*L.face, SC);
+      drawSheet(def, a.row, col, 0, 0, 1, false);
+      ctx.restore();
+    }
+
+    // nome no canto, no espirito do MvC
+    ctx.textAlign=L.align;
+    ctx.font='900 40px "Arial Black",sans-serif';
+    ctx.lineJoin='round'; ctx.lineWidth=7;
+    ctx.strokeStyle='rgba(5,11,22,0.9)';
+    ctx.strokeText(CHARS[L.id].name.toUpperCase(), L.nomeX, H-30);
+    ctx.fillStyle= on?COL.gold:'rgba(120,150,190,0.55)';
+    ctx.fillText(CHARS[L.id].name.toUpperCase(), L.nomeX, H-30);
+  });
+
+  // ---- corredor central: logo e chamada ----
+  const lw=Math.min(224, W*0.25), img=LOGO.img;
+  if(img&&img.complete&&img.naturalWidth){
+    const lh=lw/LOGO.ratio;
+    ctx.save();
+    ctx.shadowColor='#2e8dff'; ctx.shadowBlur=26;
+    ctx.drawImage(img, Math.round(W/2-lw/2), 40, Math.round(lw), Math.round(lh));
+    ctx.restore();
+  }
+
+  ctx.textAlign='center';
+  ctx.font='900 25px "Arial Black",sans-serif';
+  ctx.fillStyle=COL.gold;
+  ctx.shadowColor='rgba(255,203,77,.55)'; ctx.shadowBlur=14;
+  ctx.fillText('ESCAPE THE CASINO FLOOR', W/2, 168);
+  ctx.shadowBlur=0;
+
+  ctx.font='600 14px system-ui,sans-serif';
+  ctx.fillStyle='rgba(207,230,255,.72)';
+  ctx.fillText('Liberte os 7 amigões presos nas vitrines', W/2, 194);
+  ctx.fillText('e alcance a saída antes do Jackpot Golem.', W/2, 213);
+
+  // Convite de som: some assim que o audio destrava
+  if(!SND.started()){
+    const pul=0.55+0.45*Math.sin(titleT*3.2);
+    ctx.textAlign='center';
+    ctx.font='900 15px "Arial Black",sans-serif';
+    ctx.lineJoin='round'; ctx.lineWidth=6;
+    ctx.strokeStyle='rgba(5,11,22,0.92)';
+    ctx.strokeText('\u266A  CLIQUE PARA ATIVAR O SOM', W/2, 262);
+    ctx.fillStyle='rgba(31,232,201,'+pul.toFixed(2)+')';
+    ctx.fillText('\u266A  CLIQUE PARA ATIVAR O SOM', W/2, 262);
+  }
+
+  ctx.setTransform(1,0,0,1,0,0);
+}
+
+function render(dt){
+  if(state==='title'){ drawTitleScreen(dt); return; }
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.imageSmoothingEnabled=false;
+  ctx.clearRect(0,0,W,H);
+  ctx.setTransform(ZOOM,0,0,ZOOM,0,-camY*ZOOM);
+  drawBackground();
+  drawGround();
+
+  pickups.forEach(pk=>{
+    if(pk.taken) return;
+    const x=pk.x-camX,y=pk.y+Math.sin(performance.now()/300+pk.x)*3;
+    if(x<-30||x>W+30) return;
+    if(pk.type==='heart'){
+      // Coracao em pixel: dois lobos com entalhe no topo, afinando ate a ponta.
+      // Cada item da lista e uma linha; duas faixas na primeira formam os lobos.
+      const X=Math.round(x), Y=Math.round(y)-8, P=2;
+      const linhas=[
+        [[-4,3],[2,3]],          // cleft de uma linha so: lobos se fundem logo abaixo
+        [[-5,11]],
+        [[-6,13]], [[-6,13]],
+        [[-5,11]], [[-4,9]], [[-3,7]], [[-2,5]], [[-1,3]]
+      ];
+      ctx.fillStyle='#050308';
+      linhas.forEach((segs,i)=>segs.forEach(s=>ctx.fillRect(X+s[0]-1, Y+i*P-1, s[1]+2, P+2)));
+      ctx.fillStyle=COL.pink;
+      linhas.forEach((segs,i)=>segs.forEach(s=>ctx.fillRect(X+s[0], Y+i*P, s[1], P)));
+      ctx.fillStyle='#ff77a3';          // brilho no lobo esquerdo
+      ctx.fillRect(X-4, Y+2, 2, 2);
+      ctx.fillRect(X-5, Y+4, 2, 2);
+    } else drawChip(x,y,9,COL.gold,COL.pink);
+  });
+
+  PLATFORMS.forEach(drawPlatform);
+  npcs.forEach(n=>{ if(!n.taken) drawNpcPod(n); });
+
+  const compX=player.x-camX-player.facing*46;
+  drawHero(companionId,compX,player.y,player.facing,player.anim,player.animT*0.85,false);
+
+  enemies.forEach(e=>{
+    if(!e.alive) return;
+    const x=e.x-camX; if(x<-60||x>W+60) return;
+    drawEnemy(e);
+  });
+
+  if(bossActive && boss && !bossDefeated) drawJackpotGolem(boss);
+  else if(bossActive && boss && bossDefeated){
+    boss.y+=1; if(boss.y<GROUND_Y+120) drawJackpotGolem(boss);
+  }
+
+  projectiles.forEach(p=>drawChip(p.x-camX,p.y,p.big?8:6,COL.cream,COL.pink));
+  enemyProjectiles.forEach(p=>{
+    if(p.kind==='card') drawCard(p.x-camX,p.y,p.vx*0.05);
+    else drawCherry(p.x-camX,p.y);
+  });
+
+  // rastro da investida
+  ghosts.forEach(g=>{
+    const k=1-g.t/0.26;
+    ctx.save();
+    ctx.globalAlpha=0.42*k;
+    drawHero(g.id, g.x, g.y, g.f, 'run', g.t*2, false);
+    ctx.restore();
+    // estrias de velocidade
+    ctx.fillStyle='rgba(31,232,201,'+(0.5*k).toFixed(2)+')';
+    for(let i=0;i<3;i++){
+      const yy=snap(g.y-26-i*18), ww=PX*(4+i);
+      ctx.fillRect(snap(g.x-g.f*(18+i*10)), yy, ww, PX);
+    }
+  });
+
+  drawHero(player.charId,player.x-camX,player.y,player.facing,player.anim,player.animT,player.invuln>0);
+
+  // onda de choque do Didi, em aneis de blocos
+  if(shock){
+    const sx=shock.x-camX, a=Math.max(0,1-shock.t/0.55);
+    const A=v=>'rgba('+v+','+a.toFixed(2)+')';
+    pixelRing(sx, shock.y, shock.r,      shock.r*0.55, A('255,203,77'), 2);
+    pixelRing(sx, shock.y, shock.r*0.72, shock.r*0.40, A('31,232,201'), 1);
+    pixelRing(sx, shock.y, shock.r*0.46, shock.r*0.26, A('243,234,217'), 1);
+  }
+
+  particles.forEach(pt=>{
+    ctx.globalAlpha=Math.max(0,pt.life);
+    ctx.fillStyle=pt.color;
+    ctx.fillRect(snap(pt.x),snap(pt.y),PX,PX);
+    ctx.globalAlpha=1;
+  });
+  floatTexts.forEach(f=>{
+    ctx.globalAlpha=Math.max(0,1-f.t);
+    ctx.fillStyle=f.color; ctx.font='bold 13px sans-serif'; ctx.textAlign='center';
+    ctx.fillText(f.text,f.x,f.y-f.t*30);
+    ctx.globalAlpha=1;
+  });
+
+  drawHUD();
+
+}
+
+function loop(ts){
+  if(!lastTime) lastTime=ts;
+  const dt=Math.min(0.033,(ts-lastTime)/1000);
+  lastTime=ts;
+  update(dt);
+  render(dt);
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+const screenWrapEl=document.getElementById('screenWrap');
+function syncUiMode(){
+  // A tela de titulo roda em modo atrair sobre o canvas, entao nao entra no ui-mode.
+  const anyOpen=['ov-pause','ov-gameover','ov-win'].some(id=>!document.getElementById(id).classList.contains('hidden'));
+  screenWrapEl.classList.toggle('ui-mode',anyOpen);
+}
+
+function setPaused(p){
+  document.getElementById('ov-pause').classList.toggle('hidden',!p);
+  state = p? 'paused':'playing';
+  if(p) SND.stop(); else { SND.play(bossActive&&!bossDefeated?'boss':'game'); lastTime=0; }
+  syncUiMode();
+}
+window.addEventListener('keydown',e=>{
+  if(e.code==='Escape' && (state==='playing'||state==='paused')) setPaused(state!=='paused');
+});
+
+function endGame(won){
+  state= won? 'win':'gameover';
+  SND.stop(); SND.fx(won?'win':'lose');
+  if(won && rescued>=NPC_TABLE.length){ player.score+=500; }
+  const rescueLine = won ? ('  ·  🔓 '+rescued+'/'+NPC_TABLE.length+' amigos resgatados'+(rescued>=NPC_TABLE.length?' (bônus +500!)':'')) : '';
+  document.getElementById(won?'winScore':'goScore').textContent = (won?'Pontuação final: ':'Pontuação: ')+player.score+rescueLine;
+  document.getElementById(won?'ov-win':'ov-gameover').classList.remove('hidden');
+  syncUiMode();
+}
+
+function startGame(){
+  SND.unlock(); SND.coin(); SND.play('game');
+  document.getElementById('ov-title').classList.add('hidden');
+  document.getElementById('ov-gameover').classList.add('hidden');
+  document.getElementById('ov-win').classList.add('hidden');
+  resetLevel();
+  state='playing'; lastTime=0;
+  syncUiMode();
+}
+syncUiMode();
+
+const pickrow=document.getElementById('pickrow');
+function nameChip(id){
+  const b=document.createElement('button');
+  b.className='namechip'+(player.charId===id?' selected':'');
+  b.type='button';
+  b.textContent=CHARS[id].name;
+  b.addEventListener('click',()=>{
+    player.charId=id; companionId = id==='didi'?'tami':'didi';
+    [...pickrow.children].forEach(c=>c.classList.remove('selected'));
+    b.classList.add('selected');
+  });
+  return b;
+}
+pickrow.appendChild(nameChip('didi'));
+pickrow.appendChild(nameChip('tami'));
+
+function paintPortraits(){}   // retratos agora sao desenhados no canvas
+
+// Politica de autoplay: o audio so pode nascer apos um gesto.
+// Politica de autoplay: audio so nasce apos gesto. Qualquer clique ou tecla
+// serve — inclusive no proprio gabinete, sem precisar iniciar a partida.
+function despertarAudio(){
+  if(SND.started()) return;
+  SND.unlock();
+  if(state==='title') SND.play('title');
+}
+['pointerdown','keydown','touchstart'].forEach(ev=>
+  window.addEventListener(ev, despertarAudio, {passive:true}));
+
+const muteBtn=document.getElementById('btnMute');
+muteBtn.addEventListener('click',()=>{
+  const m=SND.toggleMute();
+  muteBtn.innerHTML = m ? '&#128263;' : '&#128266;';
+  muteBtn.classList.toggle('off', m);
+});
+
+const startBtn=document.getElementById('btnStart');
+startBtn.addEventListener('click',()=>{ if(assetsReady) startGame(); });
+document.getElementById('btnRetry').addEventListener('click',startGame);
+document.getElementById('btnAgain').addEventListener('click',startGame);
+document.getElementById('btnResume').addEventListener('click',()=>setPaused(false));
+
+function onAssetsReady(){
+  paintPortraits();
+  startBtn.textContent='Press Start';
+  startBtn.disabled=false;
+  startBtn.style.opacity='';
+}
+if(!assetsReady){
+  startBtn.textContent='Carregando…';
+  startBtn.disabled=true;
+  startBtn.style.opacity='.6';
+} else onAssetsReady();
+
+})();
+</script>

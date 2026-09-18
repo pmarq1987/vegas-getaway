@@ -1,0 +1,345 @@
+{
+  "version": 2,
+  "palette": "palette.json",
+  "nativePixelEqualsWorldUnit": 1,
+  "displayZoom": 2,
+  "viewportWorld": [
+    480,
+    270
+  ],
+  "facing": "right",
+  "alpha": "binary",
+  "characters": {
+    "enemy-cardshark": {
+      "file": "sprites/enemy-cardshark.png",
+      "frameSize": [
+        96,
+        96
+      ],
+      "sheetSize": [
+        576,
+        384
+      ],
+      "anchor": [
+        48,
+        90
+      ],
+      "animations": {
+        "idle": {
+          "row": 0,
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 4,
+          "loop": true
+        },
+        "walk": {
+          "row": 1,
+          "columns": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "fps": 8,
+          "loop": true
+        },
+        "throw": {
+          "row": 2,
+          "columns": [
+            0,
+            1,
+            2
+          ],
+          "fps": 10,
+          "loop": false
+        },
+        "hurt": {
+          "row": 3,
+          "columns": [
+            0
+          ],
+          "fps": 0,
+          "loop": false
+        }
+      }
+    },
+    "enemy-dice": {
+      "file": "sprites/enemy-dice.png",
+      "frameSize": [
+        80,
+        80
+      ],
+      "sheetSize": [
+        640,
+        160
+      ],
+      "anchor": [
+        40,
+        74
+      ],
+      "animations": {
+        "roll": {
+          "row": 0,
+          "columns": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 12,
+          "loop": true
+        },
+        "hurt": {
+          "row": 1,
+          "columns": [
+            0
+          ],
+          "fps": 0,
+          "loop": false
+        },
+        "hp2": {
+          "row": 1,
+          "columns": [
+            1
+          ],
+          "fps": 0,
+          "loop": false,
+          "hp": 2
+        },
+        "hp1": {
+          "row": 1,
+          "columns": [
+            2
+          ],
+          "fps": 0,
+          "loop": false,
+          "hp": 1
+        }
+      }
+    },
+    "enemy-slot": {
+      "file": "sprites/enemy-slot.png",
+      "frameSize": [
+        96,
+        96
+      ],
+      "sheetSize": [
+        384,
+        288
+      ],
+      "anchor": [
+        48,
+        90
+      ],
+      "animations": {
+        "idle": {
+          "row": 0,
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 5,
+          "loop": true
+        },
+        "attack": {
+          "row": 1,
+          "columns": [
+            0,
+            1,
+            2
+          ],
+          "fps": 8,
+          "loop": false
+        },
+        "hurt": {
+          "row": 2,
+          "columns": [
+            0
+          ],
+          "fps": 0,
+          "loop": false
+        }
+      }
+    },
+    "enemy-roulette": {
+      "file": "sprites/enemy-roulette.png",
+      "frameSize": [
+        80,
+        80
+      ],
+      "sheetSize": [
+        640,
+        160
+      ],
+      "anchor": [
+        40,
+        74
+      ],
+      "animations": {
+        "spin": {
+          "row": 0,
+          "columns": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "fps": 12,
+          "loop": true
+        },
+        "hurt": {
+          "row": 1,
+          "columns": [
+            0
+          ],
+          "fps": 0,
+          "loop": false
+        }
+      }
+    },
+    "boss-golem": {
+      "file": "sprites/boss-golem.png",
+      "frameSize": [
+        192,
+        192
+      ],
+      "sheetSize": [
+        768,
+        768
+      ],
+      "anchor": [
+        96,
+        180
+      ],
+      "animations": {
+        "spin": {
+          "row": 0,
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 6,
+          "loop": true
+        },
+        "telegraph": {
+          "row": 1,
+          "columns": [
+            0,
+            1
+          ],
+          "fps": 4,
+          "loop": false
+        },
+        "slam": {
+          "row": 2,
+          "columns": [
+            0,
+            1,
+            2
+          ],
+          "fps": 10,
+          "loop": false
+        },
+        "jackpot": {
+          "row": 3,
+          "columns": [
+            0,
+            1
+          ],
+          "fps": 4,
+          "loop": false
+        }
+      },
+      "impactEffects": {
+        "row": 2,
+        "column": 1,
+        "note": "Impact cracks may extend below the foot anchor; the feet remain at y=180."
+      }
+    }
+  },
+  "environment": {
+    "bg-far": {
+      "file": "sprites/bg-far.png",
+      "size": [
+        512,
+        270
+      ],
+      "repeatX": true,
+      "parallax": 0.25
+    },
+    "bg-mid": {
+      "file": "sprites/bg-mid.png",
+      "size": [
+        768,
+        200
+      ],
+      "repeatX": true,
+      "parallax": 0.6
+    },
+    "floor": {
+      "file": "sprites/floor.png",
+      "size": [
+        256,
+        120
+      ],
+      "repeatX": true,
+      "parallax": 1.0,
+      "groundY": 90
+    },
+    "prop-pillar": {
+      "file": "sprites/prop-pillar.png",
+      "size": [
+        64,
+        270
+      ]
+    },
+    "prop-exit": {
+      "file": "sprites/prop-exit.png",
+      "size": [
+        256,
+        160
+      ],
+      "frameSize": [
+        128,
+        160
+      ],
+      "states": {
+        "locked": 0,
+        "unlocked": 1
+      }
+    },
+    "prop-vitrine": {
+      "file": "sprites/prop-vitrine.png",
+      "size": [
+        128,
+        128
+      ]
+    },
+    "prop-pit": {
+      "file": "sprites/prop-pit.png",
+      "size": [
+        128,
+        120
+      ]
+    }
+  },
+  "pending": {}
+}

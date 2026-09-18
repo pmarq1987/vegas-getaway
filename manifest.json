@@ -1,0 +1,242 @@
+{
+  "frameSize": [
+    96,
+    96
+  ],
+  "sheetSize": [
+    576,
+    384
+  ],
+  "anchor": [
+    48,
+    90
+  ],
+  "facing": "right",
+  "alpha": "binary",
+  "palette": "palette.json",
+  "characters": {
+    "didi": {
+      "file": "sprites/didi.png",
+      "animations": {
+        "idle": {
+          "row": 0,
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 5,
+          "loop": true
+        },
+        "run": {
+          "row": 1,
+          "columns": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "fps": 10,
+          "loop": true
+        },
+        "jump": {
+          "row": 2,
+          "columns": [
+            0,
+            1
+          ],
+          "fps": 0,
+          "loop": false,
+          "states": [
+            "up",
+            "down"
+          ]
+        },
+        "throw": {
+          "row": 3,
+          "columns": [
+            0,
+            1
+          ],
+          "fps": 8,
+          "loop": false
+        },
+        "hurt": {
+          "row": 3,
+          "columns": [
+            2
+          ],
+          "fps": 0,
+          "loop": false
+        }
+      }
+    },
+    "tami": {
+      "file": "sprites/tami.png",
+      "animations": {
+        "idle": {
+          "row": 0,
+          "columns": [
+            0,
+            1,
+            2,
+            3
+          ],
+          "fps": 5,
+          "loop": true
+        },
+        "run": {
+          "row": 1,
+          "columns": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "fps": 10,
+          "loop": true
+        },
+        "jump": {
+          "row": 2,
+          "columns": [
+            0,
+            1
+          ],
+          "fps": 0,
+          "loop": false,
+          "states": [
+            "up",
+            "down"
+          ]
+        },
+        "throw": {
+          "row": 3,
+          "columns": [
+            0,
+            1
+          ],
+          "fps": 8,
+          "loop": false
+        },
+        "hurt": {
+          "row": 3,
+          "columns": [
+            2
+          ],
+          "fps": 0,
+          "loop": false
+        }
+      }
+    }
+  },
+  "npcs": {
+    "npc-tiger": {
+      "name": "Tigre da Sorte",
+      "file": "sprites/npc-tiger.png",
+      "frameSize": [
+        64,
+        64
+      ],
+      "columns": [
+        0,
+        1
+      ],
+      "fps": 3,
+      "loop": true
+    },
+    "npc-dragon": {
+      "name": "Dragão Dourado",
+      "file": "sprites/npc-dragon.png",
+      "frameSize": [
+        64,
+        64
+      ],
+      "columns": [
+        0,
+        1
+      ],
+      "fps": 3,
+      "loop": true
+    },
+    "npc-aviator": {
+      "name": "Piloto Aviador",
+      "file": "sprites/npc-aviator.png",
+      "frameSize": [
+        64,
+        64
+      ],
+      "columns": [
+        0,
+        1
+      ],
+      "fps": 3,
+      "loop": true
+    },
+    "npc-rabbit": {
+      "name": "Coelho Fortuna",
+      "file": "sprites/npc-rabbit.png",
+      "frameSize": [
+        64,
+        64
+      ],
+      "columns": [
+        0,
+        1
+      ],
+      "fps": 3,
+      "loop": true
+    },
+    "npc-olympus": {
+      "name": "Titã do Olimpo",
+      "file": "sprites/npc-olympus.png",
+      "frameSize": [
+        64,
+        64
+      ],
+      "columns": [
+        0,
+        1
+      ],
+      "fps": 3,
+      "loop": true
+    },
+    "npc-roulette": {
+      "name": "Espírito da Roleta",
+      "file": "sprites/npc-roulette.png",
+      "frameSize": [
+        64,
+        64
+      ],
+      "columns": [
+        0,
+        1
+      ],
+      "fps": 3,
+      "loop": true
+    },
+    "npc-mines": {
+      "name": "Gema das Minas",
+      "file": "sprites/npc-mines.png",
+      "frameSize": [
+        64,
+        64
+      ],
+      "columns": [
+        0,
+        1
+      ],
+      "fps": 3,
+      "loop": true
+    }
+  },
+  "notes": [
+    "Idle breathing is a one-pixel body squash anchored at the feet.",
+    "NPC idle frame 2 floats upward one pixel.",
+    "Base palette hex values follow the supplied brief; shade ramps supplement materials with no supplied ramp. Brand guideline not supplied."
+  ]
+}
